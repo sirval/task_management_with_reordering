@@ -61,6 +61,3 @@ and make sure all is configured in the `config/database.php` in the connections 
 
 - For more Laravel commands and options, refer to the Laravel documentation.
 
-
-
-# task_management_with_reordering
