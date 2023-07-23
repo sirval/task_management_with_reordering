@@ -5,40 +5,40 @@
     <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
 @endsection
 @section('content')
-<div style="padding-right: 20% !important; padding-left: 20% !important; justify-content: center" class="reorder-container">
-    <div  class="card">
-        <h1 style="text-align: center;">Drag and Drop to Roeorder Table</h1>
-        @include('layouts.partials.messages')
-       
-        <div class="button-container">
-            <a style="" href="{{ route('task.create') }}" class="create-button">New Task</a>
-            <span id="edit_project_container">
-            </span>
-            <span id="delete_project_container">
-            </span>
-        </div>
-        <br />
-        <br />
-        <div>
-            <span>
-                <label>Select a project to view task: </label>
-                <select id="project_id">
-                    <option selected>--Select a project to view tasks--</option>
-                    @foreach ($projects as $row)
-                        <option value="{{ $row->id }}">{{ $row->project_name }}</option>
-                    @endforeach
-                </select>
+    <div style="padding-right: 20% !important; padding-left: 20% !important; justify-content: center" class="reorder-container">
+        <div  class="card">
+            <h1 style="text-align: center;">Drag and Drop to Roeorder Table</h1>
+            @include('layouts.partials.messages')
+        
+            <div class="button-container">
+                <a style="" href="{{ route('task.create') }}" class="create-button">New Task</a>
+                <span id="edit_project_container">
+                </span>
+                <span id="delete_project_container">
+                </span>
+            </div>
+            <br />
+            <br />
+            <div>
+                <span>
+                    <label>Select a project to view task: </label>
+                    <select id="project_id">
+                        <option selected>--Select a project to view tasks--</option>
+                        @foreach ($projects as $row)
+                            <option value="{{ $row->id }}">{{ $row->project_name }}</option>
+                        @endforeach
+                    </select>
 
-            </span>
-        </div><br /> <br />
-        <div id="succ-alert" class="alert alert-success">
-            {{-- Order updated successfully! --}}
+                </span>
+            </div><br /> <br />
+            <div id="succ-alert" class="alert alert-success">
+                {{-- Order updated successfully! --}}
+            </div>
+            <ul id="sortable">
+            {{-- value will be rendered by js  --}}
+            </ul>
         </div>
-        <ul id="sortable">
-        {{-- value will be rendered by js  --}}
-        </ul>
     </div>
-</div>
 @endsection
 @section('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
@@ -54,7 +54,7 @@
 
             $("#sortable").sortable({
                 update: function(event, ui) {
-                    updateOrder();
+                    updateReorder();
                 }
             });
 
@@ -67,12 +67,57 @@
                 $('#succ-alert').fadeOut();
             }, 3000); // 3 seconds
         }
-        function updateOrder() {
-            let task_ordering = new Array();
-            $('#sortable li').each(function() {
-                task_ordering.push($(this).attr("id"));
+
+        function getRecentTask(selectedValue) {
+            $.ajax({
+                type: "GET",
+                url: "{{ route('task.all') }}",
+                data: { project_id: selectedValue },
+                cache: false,
+                success: function(res) {
+                    let newContent = '';
+                    
+                    if (res.status === 200) {
+                        if (res.data.length > 0) {
+                            
+                            $("#edit_project_container").html(`<a style="" href="{{ route('project.edit', '') }}/${selectedValue}" class="create-button">Edit Project</a>`);
+                            $("#delete_project_container").html(`<a href="javascript:void()" onclick="confirmDelete(${selectedValue}, 'project')" class="delete-button">Delete Project</a>`);
+
+                            $.each(res.data, function(key, value) {
+                                newContent += `<li class="ui-state-default" id="${key}">
+                                                <input type="hidden" value="${value.id}" id="li_db_ids" />
+                                                <span class="drag-icon"><i class="fas fa-grip-vertical"></i></span>
+                                            ${value.task_name}
+                                                <span class="edit-icon"><i class="fas fa-edit" onclick="window.location.href = '{{ route('task.edit', '') }}/' + ${value.id}"></i></span>
+                                                <span class="delete-icon"><i class="fas fa-trash-alt" onclick="confirmDelete(${value.id}, 'task')"></i></span>
+                                            </li>`;
+                            });
+                        }else{
+                            newContent += `<h2 style="color: red">No Available Task. Click on New Task Button to add new task to list<h2>`;
+                        }
+                        
+                    } else {
+                        console.error(res.message);
+                    }
+                    $("#sortable").html(newContent);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", error);
+                }
             });
-            let order_string = 'order=' + task_ordering;
+        }
+
+        function updateReorder() {
+            let task_ordering = new Array();
+            $("#sortable li").each(function (index) {
+                const listItem = $(this);
+                const inputElement = listItem.find("input#li_db_ids");
+                const taskId = inputElement.val();
+                listItem.attr("id", index + 1); //update UI with new rendering
+                task_ordering.push([index + 1, inputElement.val()]);
+            });
+            let order_string = 'order=' + JSON.stringify(task_ordering);
+           
             $.ajax({
                 type: "POST",
                 url: "{{ route('task.reorder') }}",
@@ -108,45 +153,7 @@
             }
         }
 
-        function getRecentTask(selectedValue) {
-                $.ajax({
-                type: "GET",
-                url: "{{ route('task.all') }}",
-                data: { project_id: selectedValue },
-                cache: false,
-                success: function(res) {
-                    let newContent = '';
-                    
-                    if (res.status === 200) {
-                        console.log(res.data);
-                        if (res.data.length > 0) {
-                            $("#edit_project_container").html(`<a style="" href="{{ route('project.edit', '') }}/${selectedValue}" class="create-button">Edit Project</a>`);
-                            $("#delete_project_container").html(`<a href="javascript:void()" onclick="confirmDelete(${selectedValue}, 'project')" class="delete-button">Delete Project</a>`);
-
-                            $.each(res.data, function(key, value) {
-                                newContent += `<li class="ui-state-default" id="${value.id}">
-                                                <span class="drag-icon"><i class="fas fa-grip-vertical"></i></span>
-                                            ${value.task_name}
-                                                <span class="edit-icon"><i class="fas fa-edit" onclick="window.location.href = '{{ route('task.edit', '') }}/' + ${value.id}"></i></span>
-                                                <span class="delete-icon"><i class="fas fa-trash-alt" onclick="confirmDelete(${value.id}, 'task')"></i></span>
-                                            </li>`;
-                            });
-                        }else{
-                            newContent += `<h2 style="color: red">No Available Task. Click on New Task Button to add new task to list<h2>`;
-                        }
-                        
-                    } else {
-                        console.error(res.message);
-                    }
-                    $("#sortable").html(newContent);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error:", error);
-                }
-            });
-            // }
-        }
-
+    
         function confirmDelete(id, info) {
             let confirmation = '';
             if (info === 'project') {

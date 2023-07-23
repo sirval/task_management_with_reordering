@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Trait\Utils;
 
+
 class TaskController extends Controller
 {
     use Utils;
@@ -157,29 +158,22 @@ class TaskController extends Controller
     {
         $input = $request->all();
         if (isset($input["order"])) {
-            $order_task = explode(",", $input["order"]);
-    
-            $tasks = Task::whereIn('id', $order_task)->get();
-            if (count($tasks) >= 2) {
-                foreach ($tasks as $index => $task) {
-                    if ($index === count($tasks) - 1) {
-                        continue;
-                    }
-                    // Store the current priority in a temp variable
-                    $tempPriority = $task->priority;
-                    // swap priorities
-                    $task->priority = $tasks[$index + 1]->priority;
-                    $tasks[$index + 1]->priority = $tempPriority;
-    
-                    $task->save();
-                    $tasks[$index + 1]->save();
-                }
-
-                return $this->resp(true, 200, 'Priorities swapped successfully', []);
-            } else {
-                return $this->resp(false, 400, 'At least two tasks are required to swap priorities', []);
+            $ordered_data = json_decode($input["order"], true);
+            $succ = false;
+            foreach ($ordered_data as $ordered) {
+                $id = $ordered[1];
+                $priority = $ordered[0];
+                Task::where('id', $id)->update(['priority' => $priority]);
+                $succ = true;
             }
+            if ($succ === true) {
+                return $this->resp(true, 200, 'Priorities swapped successfully', []);
+            }
+            return $this->resp(false, 500, 'Invalid data provided', []);
+        } else {
+            return $this->resp(false, 409, 'No request received from client', []);
         }
+        
     }
 
     /**
@@ -191,8 +185,13 @@ class TaskController extends Controller
     {
         try {
             $task = Task::find($id);
-            $task->delete();
-            return $this->resp(true, 200, 'Task successfully deleted.', []);
+            if (!$task) {
+                return $this->resp(false, 404, 'Task not found.', []);
+            }
+           if($task->delete()){
+               return $this->resp(true, 200, 'Task successfully deleted.', []);
+            }
+            return $this->resp(false, 500, 'Task could not be deleted. Try again later.', []);
         } catch (\Throwable $th) {
             return $this->resp(false, 500, 'An error occurred', []);
         }

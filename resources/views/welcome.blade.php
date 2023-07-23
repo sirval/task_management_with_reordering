@@ -13,7 +13,7 @@
     <div class="container d-flex h-100">
       <div class="row justify-content-center align-self-center" data-aos="fade-up">
         <div class="col-lg-6 intro-info order-lg-first order-last" data-aos="zoom-in" data-aos-delay="100">
-          <h2>Let's schedule your task</span></h2>
+          <h2>Test by Ohuka Ikenna Valentine<span> Task Scheduling and Reordering</span></h2>
           <div>
             <a href="{{ route('task.index') }}" class="btn-get-started">Get Started</a>
           </div>

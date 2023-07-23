@@ -47,17 +47,14 @@ Follow these steps to set up and install the Laravel project:
 
 To run the PHPUnit test provided in this app, check `phpunit.xml` in the root directory of your project to confirm this code snippet is not commented or you can change to suit your need.
 
-<!-- <a href="https://raw.githubusercontent.com/sirval/tramango_api/main/public/files/test.png" target="_blank"><img src="https://raw.githubusercontent.com/sirval/tramango_api/main/public/files/test.png" /></a> -->
+`<server name="DB_CONNECTION" value="test"/>`
+`<server name="DB_DATABASE" value=":task_manager_test:"/>`
 
-and make sure all is configured in the `config/database.php` in the connections array,
+and make sure all are configured in the `config/database.php` in the connections array,
 
-1. If all are set, run `php artisan test` this makes sure we don't mess up with our main database.
-<!-- 2. if all are set, you will see about 15 passed test as seen in the screenshot below. -->
-
-<!-- <a href="https://raw.githubusercontent.com/sirval/tramango_api/main/public/files/passed_test.png" target="_blank"><img src="https://raw.githubusercontent.com/sirval/tramango_api/main/public/files/passed_test.png" /></a> -->
-
-
-- Other details as regards to the endpoints in Postman will be shared with you via email.
+1. If all are set, run `php artisan test` 
+2. if all are set, you will see about 10 passed test.
 
 - For more Laravel commands and options, refer to the Laravel documentation.
+- For inquiry, shoot me an email via `ohukaiv@gmail.com`.
 
