@@ -7,7 +7,7 @@
 @section('content')
     <div style="padding-right: 20% !important; padding-left: 20% !important; justify-content: center" class="reorder-container">
         <div  class="card">
-            <h1 style="text-align: center;">Drag and Drop to Roeorder Table</h1>
+            <h1 style="text-align: center;">Drag and Drop with Table Roeorder</h1>
             @include('layouts.partials.messages')
         
             <div class="button-container">
